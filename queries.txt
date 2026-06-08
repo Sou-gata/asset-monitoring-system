@@ -1,0 +1,6 @@
+INSERT INTO config_a1b2c3d4 (config_key, value)
+VALUES ('last_backup', '2026-06-08 11:31:22'), ('running_emails', 'sougatatalukdar96@gmail.com,sougatatalukdar77@gmail.com');
+
+UPDATE config_a1b2c3d4
+SET value = 'Backup could not be completed. Please try again later.'
+WHERE config_key = 'backup_fail_text';
