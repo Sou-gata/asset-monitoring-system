@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Menu, Sun, Moon } from "lucide-react";
+import { Menu, Sun, Moon, User, KeyRound, LogOut } from "lucide-react";
 
 import {
     Popover,
@@ -8,23 +8,26 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogFooter,
+    DialogHeader,
+    DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import SpinnerButton from "./ui/spinner-button";
 
 import { Context } from "../utils/Context";
 import apiService from "../utils/apiService";
 import { navigateTo } from "../utils/navigate";
-import { formatDateTime, makeAvatarName } from "../utils/helperFunctions";
+import { isStrongPassword } from "../utils/helperFunctions";
 import toaster from "../utils/toaster";
-import SpinnerButton from "./ui/spinner-button";
 
 const Header = () => {
-    const {
-        user,
-        setUser,
-        isSidebarOpen,
-        setIsSidebarOpen,
-        lastBackup,
-        setLastBackup,
-    } = useContext(Context);
+    const { user, setUser, isSidebarOpen, setIsSidebarOpen } =
+        useContext(Context);
 
     const [isOpen, setIsOpen] = useState(false);
     const [isBackUpLoading, setIsBackUpLoading] = useState(false);
@@ -32,6 +35,13 @@ const Header = () => {
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem("theme") || "light";
     });
+
+    // Change Password States
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (theme === "dark") {
@@ -59,23 +69,54 @@ const Header = () => {
         }
     };
 
-    const handleBackup = async () => {
-        setIsBackUpLoading(true);
-        try {
-            const res = await apiService.post("/users/manual-backup");
-            if (res.success) {
-                setLastBackup(res.data.lastBackup);
-            }
+    const handleOpenChange = (open) => {
+        setIsChangePasswordOpen(open);
+        if (!open) {
+            setOldPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+        }
+    };
 
-            setIsOpen(false);
-            toaster("success", "Backup created successfully");
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            toaster("error", "Please fill in all fields");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            toaster(
+                "error",
+                "New password and confirmation password do not match"
+            );
+            return;
+        }
+
+        if (!isStrongPassword(newPassword)) {
+            toaster(
+                "error",
+                "Password must be at least 8 characters, include uppercase, lowercase, number, and special character."
+            );
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await apiService.post("/users/change-password", {
+                oldPassword,
+                newPassword,
+                confirmPassword,
+            });
+            toaster("success", "Password changed successfully");
+            handleOpenChange(false);
         } catch (error) {
-            const errMsg =
-                error.response.data.message || "Failed to create backup";
-            toaster("error", errMsg);
-            console.error("Backup failed:", error);
+            const errorMsg =
+                error.response?.data?.message || "Failed to change password";
+            toaster("error", errorMsg);
         } finally {
-            setIsBackUpLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -101,7 +142,7 @@ const Header = () => {
                     <div className="p-1 rounded-full">
                         <img src="/icon.png" alt="Logo" className="h-9 w-9" />
                     </div>
-                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 hidden sm:block">
                         Asset Monitoring System
                     </h1>
                 </Link>
@@ -129,50 +170,141 @@ const Header = () => {
 
                 {user && (
                     <Popover open={isOpen} onOpenChange={setIsOpen}>
-                        <PopoverTrigger className="cursor-pointer hidden lg:block">
-                            <div className="flex items-center justify-center bg-blue-500 text-white rounded-full h-9 w-9 cursor-pointer">
-                                <p className="pointer-events-none">
-                                    {makeAvatarName(user.name)}
-                                </p>
+                        <PopoverTrigger className="cursor-pointer focus:outline-none">
+                            <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full h-9 w-9 pointer-events-none shadow-xs">
+                                <User className="h-4.5 w-4.5 text-white" />
                             </div>
                         </PopoverTrigger>
-                        <PopoverContent className="w-80">
-                            <Button
-                                variant="ghost"
-                                className="w-full text-left cursor-pointer"
-                                onClick={handleLogout}
-                            >
-                                Logout
-                            </Button>
-                            {user.role == "admin" && (
-                                <>
-                                    <div className="h-[1px] w-full bg-gray-200 dark:bg-gray-800" />
-                                    <SpinnerButton
-                                        variant="ghost"
-                                        className="w-full text-left cursor-pointer"
-                                        onClick={handleBackup}
-                                        loading={isBackUpLoading}
-                                        loadingText="Backing Up..."
-                                    >
-                                        Backup
-                                    </SpinnerButton>
-                                    <div className="mb-2 h-[1px] w-full bg-gray-200 dark:bg-gray-800" />
-                                    <p className="text-xs text-muted-foreground text-center">
-                                        Last backup:{" "}
-                                        <b>
-                                            {lastBackup
-                                                ? formatDateTime(
-                                                      new Date(lastBackup)
-                                                  )
-                                                : "N/A"}
-                                        </b>
-                                    </p>
-                                </>
-                            )}
+                        <PopoverContent className="w-72 p-0 rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-lg overflow-hidden">
+                            {/* User Info Header */}
+                            <div className="p-4 bg-gray-50/50 dark:bg-neutral-900/30 border-b border-gray-200/80 dark:border-neutral-800">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full h-10 w-10 shadow-xs">
+                                        <User className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0 items-start">
+                                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                            {user.name}
+                                        </span>
+                                        <span className="px-2.5 pt-0.5 text-[10px] mt-1 font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 border-1 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-full">
+                                            {user.role}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Actions List */}
+                            <div className="p-1.5 space-y-0.5">
+                                <button
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        setIsChangePasswordOpen(true);
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all duration-200 cursor-pointer text-left focus:outline-none"
+                                >
+                                    <KeyRound className="h-4 w-4" />
+                                    <span>Change Password</span>
+                                </button>
+
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all duration-200 cursor-pointer text-left focus:outline-none"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    <span>Sign Out</span>
+                                </button>
+                            </div>
                         </PopoverContent>
                     </Popover>
                 )}
             </div>
+
+            <Dialog open={isChangePasswordOpen} onOpenChange={handleOpenChange}>
+                <DialogContent className="max-w-[90vw] w-[450px]">
+                    <DialogHeader className="text-left">
+                        <DialogTitle className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                            Change Password
+                        </DialogTitle>
+                        <DialogDescription className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Please enter your old password and choose a new
+                            strong password.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        onSubmit={handleChangePassword}
+                        className="space-y-4 text-left mt-2"
+                    >
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                Old Password{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                className="w-full bg-white dark:bg-card border border-neutral-200 dark:border-neutral-800 rounded-lg focus:border-blue-500 h-10 transition-colors"
+                                value={oldPassword}
+                                onChange={(e) => setOldPassword(e.target.value)}
+                                type="password"
+                                autocomplete="off"
+                                placeholder="Enter current password"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                New Password{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                className="w-full bg-white dark:bg-card border border-neutral-200 dark:border-neutral-800 rounded-lg focus:border-blue-500 h-10 transition-colors"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                type="password"
+                                autocomplete="off"
+                                placeholder="Enter new strong password"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                Confirm Password{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                className="w-full bg-white dark:bg-card border border-neutral-200 dark:border-neutral-800 rounded-lg focus:border-blue-500 h-10 transition-colors"
+                                value={confirmPassword}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                }
+                                type="password"
+                                autocomplete="off"
+                                placeholder="Confirm your new password"
+                                required
+                            />
+                        </div>
+
+                        <DialogFooter className="mt-6 gap-2 sm:gap-0">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="cursor-pointer rounded-lg border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 px-5 h-10"
+                                onClick={() => handleOpenChange(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <SpinnerButton
+                                type="submit"
+                                loading={isSubmitting}
+                                disabled={isSubmitting}
+                                loadingText="Changing..."
+                                variant="default"
+                                className="ms-4 cursor-pointer rounded-lg bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:text-neutral-900 dark:hover:bg-blue-400 px-5 h-10 font-medium border-none"
+                            >
+                                Change Password
+                            </SpinnerButton>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </header>
     );
 };

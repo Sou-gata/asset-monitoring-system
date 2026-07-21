@@ -26,12 +26,14 @@ const employeeRoutes = require("./routes/employee.routes");
 const assetRoutes = require("./routes/asset.routes");
 const taggingRoutes = require("./routes/tagging.routes");
 const configRoutes = require("./routes/config.routes");
+const backupRoutes = require("./routes/backup.routes");
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/employees", employeeRoutes);
 app.use("/api/v1/assets", assetRoutes);
 app.use("/api/v1/taggings", taggingRoutes);
 app.use("/api/v1/config", configRoutes);
+app.use("/api/v1/backups", backupRoutes);
 
 // serve static files
 app.use(express.static(path.join(__dirname, "build")));
@@ -46,9 +48,10 @@ app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
-// task scheduleing
 const { initScheduler } = require("./utils/scheduler");
+
 initScheduler();
+
 const { getLocalIPv4 } = require("./utils/helperFunctions");
 app.listen(process.env.PORT || 7777, () => {
     console.log(

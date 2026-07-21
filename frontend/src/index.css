@@ -77,6 +77,44 @@
     --sidebar-ring: oklch(0.623 0.214 259.815);
 }
 
+:root,
+.tp-ui-modal,
+.tp-ui-wrapper,
+.tp-ui {
+    --tp-bg: var(--background);
+    --tp-surface: var(--muted);
+    --tp-surface-hover: var(--accent);
+    --tp-input-bg: var(--input);
+    --tp-text: var(--foreground);
+    --tp-text-secondary: var(--muted-foreground);
+    --tp-text-disabled: color-mix(in oklch, var(--foreground) 40%, transparent);
+    --tp-text-type-time: var(--foreground);
+    --tp-text-icon: var(--muted-foreground);
+    --tp-am-pm-active: var(--primary);
+    --tp-am-pm-text-selected: var(--primary-foreground);
+    --tp-am-pm-text-unselected: var(--muted-foreground);
+    --tp-primary: var(--primary);
+    --tp-on-primary: var(--primary-foreground);
+    --tp-primary-container: var(--muted);
+    --tp-on-primary-container: var(--foreground);
+    --tp-primary-rgb: 120, 90, 255;
+    --tp-on-surface: var(--foreground);
+    --tp-on-surface-variant: var(--muted-foreground);
+    --tp-on-surface-rgb: 30, 30, 40;
+    /* fallback */
+    --tp-surface-container: var(--popover);
+    --tp-outline-variant: var(--border);
+    --tp-outline: var(--ring);
+    --tp-border: var(--border);
+    --tp-tertiary-container: var(--accent);
+    --tp-on-tertiary-container: var(--accent-foreground);
+    --tp-hover-bg: var(--accent);
+    --tp-backdrop: rgba(0, 0, 0, 0.5);
+    --tp-dropdown-option-bg: var(--popover);
+    --tp-dropdown-option-text: var(--popover-foreground);
+    --tp-border-radius: var(--radius);
+}
+
 .dark {
     --background: oklch(0.141 0.005 285.823);
     --foreground: oklch(0.985 0 0);
@@ -189,34 +227,34 @@ input[type="number"] {
     background-color: var(--background);
     color: var(--foreground);
 }
-.dark .bg-white {
+.dark .bg-white:not(.signin-page *) {
     background-color: var(--card) !important;
 }
-.dark .bg-gray-100,
-.dark .bg-gray-50 {
+.dark .bg-gray-100:not(.signin-page *),
+.dark .bg-gray-50:not(.signin-page *) {
     background-color: var(--background) !important;
 }
-.dark .text-gray-900,
-.dark .text-gray-800,
-.dark .text-gray-700,
-.dark .text-neutral-900,
-.dark .text-neutral-800 {
+.dark .text-gray-900:not(.signin-page *),
+.dark .text-gray-800:not(.signin-page *),
+.dark .text-gray-700:not(.signin-page *),
+.dark .text-neutral-900:not(.signin-page *),
+.dark .text-neutral-800:not(.signin-page *) {
     color: var(--foreground) !important;
 }
-.dark .text-gray-600,
-.dark .text-gray-500,
-.dark .text-gray-400 {
+.dark .text-gray-600:not(.signin-page *),
+.dark .text-gray-500:not(.signin-page *),
+.dark .text-gray-400:not(.signin-page *) {
     color: var(--muted-foreground) !important;
 }
-.dark .border-gray-200,
-.dark .border-gray-100,
-.dark .border-gray-300,
-.dark .border {
+.dark .border-gray-200:not(.signin-page *),
+.dark .border-gray-100:not(.signin-page *),
+.dark .border-gray-300:not(.signin-page *),
+.dark .border:not(.signin-page *) {
     border-color: var(--border) !important;
 }
-.dark select,
-.dark input,
-.dark textarea {
+.dark select:not(.signin-page *),
+.dark input:not(.signin-page *),
+.dark textarea:not(.signin-page *) {
     background-color: var(--input) !important;
     color: var(--foreground) !important;
     border-color: var(--border) !important;
@@ -277,3 +315,10 @@ input[type="number"] {
     scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
 }
 
+/* Timepicker custom style overrides to match system theme */
+.tp-ui-modal {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+}
+.tp-ui-wrapper {
+    border: 1px solid var(--border) !important;
+}

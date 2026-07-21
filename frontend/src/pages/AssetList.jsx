@@ -633,9 +633,9 @@ const AssetList = () => {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="it">it</SelectItem>
+                                        <SelectItem value="it">IT</SelectItem>
                                         <SelectItem value="admin">
-                                            admin
+                                            Admin
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -1132,105 +1132,106 @@ const AssetList = () => {
                             <Check className="mr-2 h-4 w-4" /> Update
                         </SpinnerButton>
                     </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
-            <Dialog
-                open={isOpen.editCalendar}
-                onOpenChange={(set) =>
-                    setIsOpen((prev) => ({ ...prev, editCalendar: set }))
-                }
-            >
-                <DialogContent
-                    className="[&>button.absolute]:hidden w-[300px]"
-                    onPointerDownOutside={() =>
-                        setIsOpen((prev) => ({ ...prev, editCalendar: false }))
-                    }
-                >
-                    <DialogTitle className="hidden" />
-                    <DialogDescription className="hidden" />
-                    <Calendar
-                        mode="single"
-                        selected={editForm.exp_date}
-                        onSelect={(e) => {
-                            setEditForm((prev) => ({ ...prev, exp_date: e }));
-                            setIsOpen((prev) => ({
-                                ...prev,
-                                editCalendar: false,
-                                edit: true,
-                            }));
-                        }}
-                        startMonth={new Date()}
-                        toYear={2100}
-                        captionLayout="dropdown"
-                    />
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isOpen.pisCalendar}
-                onOpenChange={(set) =>
-                    setIsOpen((prev) => ({ ...prev, pisCalendar: set }))
-                }
-            >
-                <DialogContent
-                    className="[&>button.absolute]:hidden w-[300px]"
-                    onPointerDownOutside={() =>
-                        setIsOpen((prev) => ({ ...prev, pisCalendar: false }))
-                    }
-                >
-                    <DialogTitle className="hidden" />
-                    <DialogDescription className="hidden" />
-                    <Calendar
-                        mode="single"
-                        selected={editForm.pis_date}
-                        onSelect={(e) => {
-                            setEditForm((prev) => ({ ...prev, pis_date: e }));
-                            setIsOpen((prev) => ({
-                                ...prev,
-                                editCalendar: false,
-                                edit: true,
-                            }));
-                        }}
-                        startMonth={new Date()}
-                        toYear={2100}
-                        captionLayout="dropdown"
-                    />
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isOpen.submisstionCalendar}
-                onOpenChange={(set) =>
-                    setIsOpen((prev) => ({ ...prev, submisstionCalendar: set }))
-                }
-            >
-                <DialogContent
-                    onPointerDownOutside={() =>
-                        setIsOpen((prev) => ({
-                            ...prev,
-                            submisstionCalendar: false,
-                        }))
-                    }
-                >
-                    <DialogTitle className="hidden" />
-                    <DialogDescription className="hidden" />
-                    <Calendar
-                        mode="single"
-                        selected={editForm.assigned_submission}
-                        onSelect={(e) => {
-                            setEditForm((prev) => ({
-                                ...prev,
-                                assigned_submission: e,
-                            }));
-                            setIsOpen((prev) => ({
-                                ...prev,
-                                submisstionCalendar: false,
-                                edit: true,
-                            }));
-                        }}
-                        startMonth={new Date()}
-                        toYear={2100}
-                        captionLayout="dropdown"
-                    />
+                    <Dialog
+                        open={isOpen.editCalendar}
+                        onOpenChange={(set) =>
+                            setIsOpen((prev) => ({ ...prev, editCalendar: set }))
+                        }
+                    >
+                        <DialogContent
+                            className="[&>button.absolute]:hidden w-[300px]"
+                            onPointerDownOutside={() =>
+                                setIsOpen((prev) => ({ ...prev, editCalendar: false }))
+                            }
+                        >
+                            <DialogTitle className="hidden" />
+                            <DialogDescription className="hidden" />
+                            <Calendar
+                                mode="single"
+                                selected={editForm.exp_date}
+                                onSelect={(e) => {
+                                    setEditForm((prev) => ({ ...prev, exp_date: e }));
+                                    setIsOpen((prev) => ({
+                                        ...prev,
+                                        editCalendar: false,
+                                        edit: true,
+                                    }));
+                                }}
+                                startMonth={new Date()}
+                                toYear={2100}
+                                captionLayout="dropdown"
+                            />
+                        </DialogContent>
+                    </Dialog>
+                    <Dialog
+                        open={isOpen.pisCalendar}
+                        onOpenChange={(set) =>
+                            setIsOpen((prev) => ({ ...prev, pisCalendar: set }))
+                        }
+                    >
+                        <DialogContent
+                            className="[&>button.absolute]:hidden w-[300px]"
+                            onPointerDownOutside={() =>
+                                setIsOpen((prev) => ({ ...prev, pisCalendar: false }))
+                            }
+                        >
+                            <DialogTitle className="hidden" />
+                            <DialogDescription className="hidden" />
+                            <Calendar
+                                mode="single"
+                                selected={editForm.pis_date}
+                                onSelect={(e) => {
+                                    setEditForm((prev) => ({ ...prev, pis_date: e }));
+                                    setIsOpen((prev) => ({
+                                        ...prev,
+                                        pisCalendar: false,
+                                        edit: true,
+                                    }));
+                                }}
+                                startMonth={new Date(2020, 0)}
+                                toYear={2100}
+                                captionLayout="dropdown"
+                            />
+                        </DialogContent>
+                    </Dialog>
+                    <Dialog
+                        open={isOpen.submisstionCalendar}
+                        onOpenChange={(set) =>
+                            setIsOpen((prev) => ({ ...prev, submisstionCalendar: set }))
+                        }
+                    >
+                        <DialogContent
+                            className="[&>button.absolute]:hidden w-[300px]"
+                            onPointerDownOutside={() =>
+                                setIsOpen((prev) => ({
+                                    ...prev,
+                                    submisstionCalendar: false,
+                                }))
+                            }
+                        >
+                            <DialogTitle className="hidden" />
+                            <DialogDescription className="hidden" />
+                            <Calendar
+                                mode="single"
+                                selected={editForm.assigned_submission}
+                                onSelect={(e) => {
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        assigned_submission: e,
+                                    }));
+                                    setIsOpen((prev) => ({
+                                        ...prev,
+                                        submisstionCalendar: false,
+                                        edit: true,
+                                    }));
+                                }}
+                                startMonth={new Date()}
+                                toYear={2100}
+                                captionLayout="dropdown"
+                            />
+                        </DialogContent>
+                    </Dialog>
                 </DialogContent>
             </Dialog>
             <Dialog
@@ -1887,43 +1888,44 @@ const AssetList = () => {
                             </SpinnerButton>
                         </div>
                     </div>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isOpen.disposeCalendar}
-                onOpenChange={(set) =>
-                    setIsOpen((prev) => ({ ...prev, disposeCalendar: set }))
-                }
-            >
-                <DialogContent
-                    className="[&>button.absolute]:hidden w-[300px]"
-                    onPointerDownOutside={() =>
-                        setIsOpen((prev) => ({
-                            ...prev,
-                            disposeCalendar: false,
-                        }))
-                    }
-                >
-                    <DialogTitle className="hidden" />
-                    <DialogDescription className="hidden" />
-                    <Calendar
-                        mode="single"
-                        selected={disposeDetails.disposalDate}
-                        onSelect={(e) => {
-                            setDisposeDetails((prev) => ({
-                                ...prev,
-                                disposalDate: e,
-                            }));
-                            setIsOpen((prev) => ({
-                                ...prev,
-                                disposeCalendar: false,
-                                dispose: true,
-                            }));
-                        }}
-                        startMonth={new Date()}
-                        toYear={2100}
-                        captionLayout="dropdown"
-                    />
+
+                    <Dialog
+                        open={isOpen.disposeCalendar}
+                        onOpenChange={(set) =>
+                            setIsOpen((prev) => ({ ...prev, disposeCalendar: set }))
+                        }
+                    >
+                        <DialogContent
+                            className="[&>button.absolute]:hidden w-[300px]"
+                            onPointerDownOutside={() =>
+                                setIsOpen((prev) => ({
+                                    ...prev,
+                                    disposeCalendar: false,
+                                }))
+                            }
+                        >
+                            <DialogTitle className="hidden" />
+                            <DialogDescription className="hidden" />
+                            <Calendar
+                                mode="single"
+                                selected={disposeDetails.disposalDate}
+                                onSelect={(e) => {
+                                    setDisposeDetails((prev) => ({
+                                        ...prev,
+                                        disposalDate: e,
+                                    }));
+                                    setIsOpen((prev) => ({
+                                        ...prev,
+                                        disposeCalendar: false,
+                                        dispose: true,
+                                    }));
+                                }}
+                                startMonth={new Date()}
+                                toYear={2100}
+                                captionLayout="dropdown"
+                            />
+                        </DialogContent>
+                    </Dialog>
                 </DialogContent>
             </Dialog>
         </div>

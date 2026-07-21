@@ -19,7 +19,8 @@ cd ..
 :: 2. Build Backend
 echo [2/4] Building Backend...
 cd backend
-call npm run build>nul 2>&1
+@REM call npm run build>nul 2>&1
+call npm run build
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Backend build failed!
     cd ..

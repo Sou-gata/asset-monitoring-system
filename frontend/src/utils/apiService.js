@@ -35,7 +35,6 @@ apiClient.interceptors.response.use(
 
             if (data?.seassonExpired) {
                 navigateToLogin();
-                toaster("error", "Session expired. Please log in again.");
             }
 
             switch (status) {
@@ -148,7 +147,9 @@ class ApiService {
                 }
             }
 
-            const blob = new Blob([response.data], { type: response.headers["content-type"] });
+            const blob = new Blob([response.data], {
+                type: response.headers["content-type"],
+            });
             const url = window.URL.createObjectURL(blob);
 
             const link = document.createElement("a");
@@ -178,7 +179,9 @@ class ApiService {
             let filename = "download.pdf";
 
             if (disposition && disposition.includes("filename=")) {
-                const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                const match = disposition.match(
+                    /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+                );
                 if (match?.[1]) {
                     filename = match[1].replace(/['"]/g, "");
                 }
@@ -195,7 +198,9 @@ class ApiService {
                     printWindow.print();
                 };
             } else {
-                throw new Error("Popup blocked! Please allow popups for this site.");
+                throw new Error(
+                    "Popup blocked! Please allow popups for this site."
+                );
             }
 
             return filename;

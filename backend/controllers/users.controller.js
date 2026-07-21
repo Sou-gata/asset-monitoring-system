@@ -22,7 +22,6 @@ const {
 const { cleanupFile } = require("../utils/csvUpload");
 const { format } = require("@fast-csv/format");
 const { sendMail } = require("../utils/sendMail.js");
-const { backupDatabase } = require("../backup");
 
 const cookieOptions = {
     httpOnly: true,
@@ -1190,20 +1189,71 @@ async function resetPassword(req, res) {
     }
 }
 
-async function createManualBackup(req, res) {
-    try {
-        const backup = await backupDatabase(true);
-        res.status(200).json(
-            new ApiResponse(200, backup, "Backup created successfully")
-        );
-    } catch (error) {
-        res.status(500).json(
+async function changePassword(req, res) {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    const { id, tenantId } = req.user;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "All password fields are required"));
+    }
+
+    if (newPassword !== confirmPassword) {
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "New password and confirmation password do not match"));
+    }
+
+    if (!isStrongPassword(newPassword)) {
+        return res.status(400).json(
             new ApiErrorResponce(
-                500,
+                400,
                 {},
-                error.message || "Internal server error"
+                "Weak password. Must include uppercase, lowercase, number, special char, and be at least 8 chars long."
             )
         );
+    }
+
+    const userTable = `users_${tenantId}`;
+    try {
+        const [rows] = await pool.query(
+            `SELECT password FROM ${userTable} WHERE id = ?`,
+            [id]
+        );
+        if (rows.length === 0) {
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "User not found"));
+        }
+
+        const user = rows[0];
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res
+                .status(400)
+                .json(new ApiErrorResponce(400, {}, "Incorrect old password"));
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query(
+            `UPDATE ${userTable} SET password = ? WHERE id = ?`,
+            [hashedPassword, id]
+        );
+
+        return res.status(200).json(
+            new ApiResponse(200, {}, "Password changed successfully")
+        );
+    } catch (error) {
+        return res
+            .status(500)
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -1219,5 +1269,5 @@ module.exports = {
     resetPassword,
     backupUpcommingCSV,
     backupExpiredCSV,
-    createManualBackup,
+    changePassword,
 };

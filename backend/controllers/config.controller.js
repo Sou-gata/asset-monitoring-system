@@ -1,67 +1,66 @@
 const ApiErrorResponce = require("../utils/ApiErrorResponce");
 const ApiResponse = require("../utils/ApiResponse");
 const pool = require("../utils//dbConnect");
+const { initScheduler } = require("../utils/scheduler");
 
 async function updateConfig(req, res) {
-    const {
-        exp_days,
-        exp_emails,
-        submission_days,
-        submission_emails,
-        backup_fail_email,
-        exp_text,
-        submission_text,
-        backup_fail_text,
-        running_emails,
-    } = req.body;
-    if (
-        exp_days === undefined ||
-        !exp_emails ||
-        submission_days === undefined ||
-        !submission_emails ||
-        !backup_fail_email ||
-        !exp_text ||
-        !submission_text ||
-        !backup_fail_text ||
-        !running_emails
-    ) {
-        return res
-            .status(400)
-            .json(new ApiErrorResponce(400, {}, "All fields are required"));
-    }
+    const keys = [
+        "exp_days",
+        "exp_emails",
+        "submission_days",
+        "submission_emails",
+        "backup_fail_email",
+        "exp_text",
+        "submission_text",
+        "backup_fail_text",
+        "running_emails",
+        "user",
+        "password",
+        "shared_folder",
+        "backup_ip",
+        "backup_schedule",
+        "status_report_schedule",
+    ];
+
+    const connection = await pool.getConnection();
     try {
-        const query = `
-            UPDATE config_a1b2c3d4 
-            SET value = CASE config_key
-                WHEN 'exp_days'          THEN ?
-                WHEN 'exp_emails'        THEN ?
-                WHEN 'submission_days'   THEN ?
-                WHEN 'submission_emails' THEN ?
-                WHEN 'backup_fail_email' THEN ?
-                WHEN 'exp_text'          THEN ?
-                WHEN 'submission_text'   THEN ?
-                WHEN 'backup_fail_text'  THEN ?
-                WHEN 'running_emails'    THEN ?
-                ELSE value
-            END
-            WHERE config_key IN ('exp_days', 'exp_emails', 'submission_days', 'submission_emails', 'backup_fail_email', 'exp_text', 'submission_text', 'backup_fail_text', 'running_emails')
-        `;
-        const params = [
-            exp_days,
-            exp_emails,
-            submission_days,
-            submission_emails,
-            backup_fail_email,
-            exp_text,
-            submission_text,
-            backup_fail_text,
-            running_emails,
-        ];
-        await pool.query(query, params);
+        await connection.beginTransaction();
+
+        for (const key of keys) {
+            if (req.body[key] !== undefined) {
+                const value = String(req.body[key]);
+                const [rows] = await connection.query(
+                    `SELECT id FROM config_a1b2c3d4 WHERE config_key = ?`,
+                    [key]
+                );
+                if (rows.length > 0) {
+                    await connection.query(
+                        `UPDATE config_a1b2c3d4 SET value = ? WHERE config_key = ?`,
+                        [value, key]
+                    );
+                } else {
+                    await connection.query(
+                        `INSERT INTO config_a1b2c3d4 (config_key, value) VALUES (?, ?)`,
+                        [key, value]
+                    );
+                }
+            }
+        }
+
+        await connection.commit();
+        connection.release();
+
+        // Reload scheduler tasks with updated configuration
+        initScheduler().catch((err) => console.error("Error reloading scheduler:", err));
+
         return res
             .status(200)
             .json(new ApiResponse(200, {}, "Config updated successfully"));
     } catch (error) {
+        if (connection) {
+            await connection.rollback();
+            connection.release();
+        }
         console.log(error);
         return res
             .status(500)

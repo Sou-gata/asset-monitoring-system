@@ -21,6 +21,7 @@ import ForgetPassword from "../pages/ResetPassword";
 import Settings from "../pages/Settings";
 import DisposedAssets from "../pages/DisposedAssets";
 import AllocationHistory from "../pages/AllocationHistory";
+import BackupLogs from "../pages/BackupLogs";
 
 const Router = () => {
     const navigate = useNavigate();
@@ -58,6 +59,7 @@ const Router = () => {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/disposed-assets" element={<DisposedAssets />} />
                     <Route path="/allocation-history" element={<AllocationHistory />} />
+                    <Route path="/backup-logs" element={<BackupLogs />} />
                 </Route>
             </Route>
         </Routes>

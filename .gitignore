@@ -52,3 +52,6 @@ backend/uploads/*
 
 /data
 backend/utils/sendMail.js
+/*.csv
+/*.txt
+*ams

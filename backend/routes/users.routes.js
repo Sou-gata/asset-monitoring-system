@@ -13,7 +13,7 @@ const {
     resetPassword,
     backupUpcommingCSV,
     backupExpiredCSV,
-    createManualBackup,
+    changePassword,
 } = require("../controllers/users.controller");
 const { authMiddleware, isAdmin } = require("../middlewares/auth");
 
@@ -26,8 +26,8 @@ router.post("/dashboard", authMiddleware, getDaashboardData);
 router.post("/backup-dashboard", authMiddleware, backupCSV);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.post("/change-password", authMiddleware, changePassword);
 router.post("/backup-upcoming-csv", authMiddleware, backupUpcommingCSV);
 router.post("/backup-expiring-csv", authMiddleware, backupExpiredCSV);
-router.post("/manual-backup", authMiddleware, isAdmin, createManualBackup);
 
 module.exports = router;

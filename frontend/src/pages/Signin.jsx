@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import apiService from "@/utils/apiService";
 import { Context } from "@/utils/Context";
 import toaster from "../utils/toaster";
-import { User, Lock, Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { User, Lock, Mail, ArrowLeft, Sun, Moon } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import SpinnerButton from "../components/ui/spinner-button";
 import { navigateTo } from "../utils/navigate";
@@ -13,6 +13,24 @@ import { navigateTo } from "../utils/navigate";
 const Signin = () => {
     const { user, setUser } = useContext(Context);
     const navigate = useNavigate();
+
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem("theme") || "light";
+    });
+
+    useEffect(() => {
+        if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+        localStorage.setItem("theme", theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    };
+
     useEffect(() => {
         const token = localStorage.getItem("token");
         const user = localStorage.getItem("user");
@@ -104,7 +122,26 @@ const Signin = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-blue-50/50 p-6 relative overflow-hidden">
+        <div className="signin-page min-h-screen flex items-center justify-center bg-blue-50/50 dark:bg-background p-6 relative overflow-hidden transition-colors duration-300">
+            {/* Theme Toggle Button */}
+            <div className="absolute top-4 right-4 z-50">
+                <button
+                    onClick={toggleTheme}
+                    className="p-2.5 rounded-full bg-white dark:bg-card border border-gray-200/80 dark:border-border text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center"
+                    title={
+                        theme === "light"
+                            ? "Switch to Dark Mode"
+                            : "Switch to Light Mode"
+                    }
+                >
+                    {theme === "light" ? (
+                        <Moon className="h-5 w-5 text-blue-900" />
+                    ) : (
+                        <Sun className="h-5 w-5 text-yellow-500" />
+                    )}
+                </button>
+            </div>
+
             <img
                 src="/login_asset_2.svg"
                 className="absolute bottom-0 left-0 w-[300px] pointer-events-none"

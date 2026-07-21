@@ -161,23 +161,34 @@ const checkSubmissionDate = async () => {
     }
 };
 
-const sendBackupFailedMail = async () => {
+const sendBackupFailedMail = async (errorReason = "") => {
     try {
         const [details] = await pool.query(
             `SELECT config_key,value FROM config_a1b2c3d4 WHERE config_key = 'backup_fail_email' OR config_key = 'backup_fail_text'`
         );
-        // console.log(details[0].value);
+
+        const configMap = details.reduce((acc, item) => {
+            acc[item.config_key] = item.value;
+            return acc;
+        }, {});
+
+        const recipientEmail = configMap["backup_fail_email"];
+        let backupFailedText = configMap["backup_fail_text"] || "Backup failed.";
+
+        if (errorReason) {
+            backupFailedText += ` (Reason: ${errorReason})`;
+        }
 
         // Render EJS template
         const template = path.join(templateDir, "backupFailed.ejs");
         const data = {
             failureTime: changeDateFormat(new Date()),
-            backupFailedText: details[1].value,
+            backupFailedText,
         };
         const html = await ejs.renderFile(template, data);
-        if (details.length > 0) {
+        if (recipientEmail) {
             const result = await sendMail(
-                details[0].value,
+                recipientEmail,
                 `Backup Failed - ${data.failureTime}`,
                 html
             );

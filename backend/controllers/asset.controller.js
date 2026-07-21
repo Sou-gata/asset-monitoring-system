@@ -38,11 +38,19 @@ async function addNewAsset(req, res) {
     if (!assetId || !type || !tenantId) {
         return res
             .status(400)
-            .json(new ApiErrorResponce(400, {}, "Asset ID, Category, and Tenant ID are required"));
+            .json(
+                new ApiErrorResponce(
+                    400,
+                    {},
+                    "Asset ID, Category, and Tenant ID are required"
+                )
+            );
     }
 
     if (!validateAssetId(assetId)) {
-        return res.status(400).json(new ApiErrorResponce(400, {}, "Invalid asset ID format"));
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "Invalid asset ID format"));
     }
 
     const assetTable = `assets_${tenantId}`;
@@ -159,19 +167,35 @@ async function addNewAsset(req, res) {
         if (/serial/i.test(msg)) {
             return res
                 .status(409)
-                .json(new ApiErrorResponce(409, {}, "Serial number already exists"));
+                .json(
+                    new ApiErrorResponce(
+                        409,
+                        {},
+                        "Serial number already exists"
+                    )
+                );
         }
 
         if (/asset_id/i.test(msg)) {
-            return res.status(409).json(new ApiErrorResponce(409, {}, "Asset ID already exists"));
+            return res
+                .status(409)
+                .json(new ApiErrorResponce(409, {}, "Asset ID already exists"));
         }
 
         if (msg) {
             return res
                 .status(409)
-                .json(new ApiErrorResponce(409, {}, "Asset ID or Serial already exists"));
+                .json(
+                    new ApiErrorResponce(
+                        409,
+                        {},
+                        "Asset ID or Serial already exists"
+                    )
+                );
         }
-        return res.status(500).json(new ApiErrorResponce(500, {}, "Internal server error"));
+        return res
+            .status(500)
+            .json(new ApiErrorResponce(500, {}, "Internal server error"));
     }
 }
 
@@ -188,7 +212,9 @@ async function getAssets(req, res) {
     const offset = (page - 1) * size;
 
     if (size < 1 || page < 1) {
-        return res.status(400).json(new ApiErrorResponce(400, {}, "Invalid page or size"));
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "Invalid page or size"));
     }
 
     let whereClauses = ["a.disposalDate IS NULL"];
@@ -210,7 +236,9 @@ async function getAssets(req, res) {
         countParams.push(like, like, like, like);
     }
 
-    const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const whereSql = whereClauses.length
+        ? `WHERE ${whereClauses.join(" AND ")}`
+        : "";
 
     // Count query (no joins for performance)
     const countQuery = `
@@ -272,7 +300,9 @@ async function getAssets(req, res) {
         const totalPages = Math.ceil(totalItems / size);
 
         if (page > totalPages && totalPages !== 0) {
-            return res.status(404).json(new ApiErrorResponce(404, {}, "Page not found"));
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "Page not found"));
         }
 
         if (totalItems === 0) {
@@ -292,7 +322,11 @@ async function getAssets(req, res) {
         }
 
         // Execute data query
-        const [assets] = await pool.query(dataQuery, [...dataParams, size, offset]);
+        const [assets] = await pool.query(dataQuery, [
+            ...dataParams,
+            size,
+            offset,
+        ]);
 
         return res.status(200).json(
             new ApiResponse(
@@ -312,7 +346,13 @@ async function getAssets(req, res) {
 
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -342,15 +382,21 @@ async function update(req, res) {
     const child_asset = childAssets && childAssets.length > 0 ? 1 : 0;
 
     if (!asset_id || !status || !serial || !type || !model_no || !asset_type) {
-        return res.status(400).json(new ApiErrorResponce(400, {}, "Required fields are missing"));
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "Required fields are missing"));
     }
 
     if (!validateAssetId(asset_id)) {
-        return res.status(400).json(new ApiErrorResponce(400, {}, "Invalid asset ID format"));
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "Invalid asset ID format"));
     }
 
     if (!["active", "inactive"].includes(status)) {
-        return res.status(400).json(new ApiErrorResponce(400, {}, "Invalid status value"));
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "Invalid status value"));
     }
 
     const assetTable = `assets_${tenantId}`;
@@ -365,7 +411,13 @@ async function update(req, res) {
             if (!validateEmployeeCode(assigned_to)) {
                 return res
                     .status(400)
-                    .json(new ApiErrorResponce(400, {}, "Invalid assigned_to format"));
+                    .json(
+                        new ApiErrorResponce(
+                            400,
+                            {},
+                            "Invalid assigned_to format"
+                        )
+                    );
             }
 
             const [employeeResult] = await pool.query(
@@ -376,7 +428,13 @@ async function update(req, res) {
             if (employeeResult.length === 0) {
                 return res
                     .status(404)
-                    .json(new ApiErrorResponce(404, {}, "Assigned employee not found"));
+                    .json(
+                        new ApiErrorResponce(
+                            404,
+                            {},
+                            "Assigned employee not found"
+                        )
+                    );
             }
 
             employeeId = employeeResult[0].id;
@@ -386,11 +444,18 @@ async function update(req, res) {
                 [employeeId]
             );
 
-            if (taggingResult.length > 0 && taggingResult[0].employee_id !== employeeId) {
+            if (
+                taggingResult.length > 0 &&
+                taggingResult[0].employee_id !== employeeId
+            ) {
                 return res
                     .status(400)
                     .json(
-                        new ApiErrorResponce(400, {}, "Employee is already tagged to another asset")
+                        new ApiErrorResponce(
+                            400,
+                            {},
+                            "Employee is already tagged to another asset"
+                        )
                     );
             }
 
@@ -492,11 +557,17 @@ async function update(req, res) {
             `SELECT child_asset_id FROM ${mappingTable} WHERE asset_id = ? AND remove_at IS NULL`,
             [parseInt(id, 10)]
         );
-        const existingChildIds = existingChildrenObj.map((row) => row.child_asset_id);
+        const existingChildIds = existingChildrenObj.map(
+            (row) => row.child_asset_id
+        );
 
         // Find which assets to remove and which to add
-        const toRemove = existingChildIds.filter((childId) => !newChildAssets.includes(childId));
-        const toAdd = newChildAssets.filter((childId) => !existingChildIds.includes(childId));
+        const toRemove = existingChildIds.filter(
+            (childId) => !newChildAssets.includes(childId)
+        );
+        const toAdd = newChildAssets.filter(
+            (childId) => !existingChildIds.includes(childId)
+        );
 
         if (toRemove.length > 0) {
             await pool.query(
@@ -565,17 +636,21 @@ async function update(req, res) {
         }
 
         if (newChildAssets.length > 0) {
-            await pool.query(`UPDATE ${assetTable} SET child_asset = 1 WHERE id = ?`, [
-                parseInt(id, 10),
-            ]);
+            await pool.query(
+                `UPDATE ${assetTable} SET child_asset = 1 WHERE id = ?`,
+                [parseInt(id, 10)]
+            );
         } else {
-            await pool.query(`UPDATE ${assetTable} SET child_asset = 0 WHERE id = ?`, [
-                parseInt(id, 10),
-            ]);
+            await pool.query(
+                `UPDATE ${assetTable} SET child_asset = 0 WHERE id = ?`,
+                [parseInt(id, 10)]
+            );
         }
 
         if (result.affectedRows === 0) {
-            return res.status(404).json(new ApiErrorResponce(404, {}, "Asset not found"));
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "Asset not found"));
         }
 
         return res.status(200).json(
@@ -608,37 +683,15 @@ async function update(req, res) {
 
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
-
-// async function getAssetById(req, res) {
-//     const { tenantId } = req.user;
-//     const { assetId } = req.body;
-//     if (!assetId || !validateAssetId(assetId)) {
-//         return res.status(400).json(new ApiErrorResponce(400, {}, "Invalid asset ID format"));
-//     }
-//     const assetTable = `assets_${tenantId}`;
-//     const query = `SELECT * FROM ${assetTable} WHERE asset_id = ?`;
-//     try {
-//         const [assets] = await pool.query(query, [assetId]);
-//         if (assets.length === 0) {
-//             return res.status(404).json(new ApiErrorResponce(404, {}, "Asset not found"));
-//         }
-//         if (assets[0].child_asset === 1) {
-//             const [childAssets] = await pool.query(
-//                 `SELECT child_asset_id FROM child_assets_${tenantId} WHERE asset_id = ? AND remove_at IS NULL`,
-//                 [assetId]
-//             );
-//             console.log("child assets", childAssets);
-//         }
-//         res.status(200).json(new ApiResponse(200, assets[0], "Asset retrieved successfully"));
-//     } catch (error) {
-//         return res
-//             .status(500)
-//             .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
-//     }
-// }
 
 async function createCSVBackup(req, res) {
     const { tenantId } = req.user;
@@ -691,7 +744,9 @@ async function createCSVBackup(req, res) {
     `;
 
     const uploadsDir =
-        env == "production" ? path.join(__dirname, "uploads") : path.join(__dirname, "../uploads");
+        env == "production"
+            ? path.join(__dirname, "uploads")
+            : path.join(__dirname, "../uploads");
     const filename = `assets_${Math.floor(Date.now() / 1000)}.csv`;
     const filePath = path.join(uploadsDir, filename);
 
@@ -709,7 +764,9 @@ async function createCSVBackup(req, res) {
         const [rows] = await pool.query(query);
 
         if (rows.length === 0) {
-            return res.status(404).json(new ApiErrorResponce(404, {}, "No assets found"));
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "No assets found"));
         }
 
         const ws = fs.createWriteStream(filePath);
@@ -740,7 +797,11 @@ async function createCSVBackup(req, res) {
                     console.error("Error sending file:", err);
                     if (!res.headersSent) {
                         res.status(500).json(
-                            new ApiErrorResponce(500, {}, "Error sending CSV file for download")
+                            new ApiErrorResponce(
+                                500,
+                                {},
+                                "Error sending CSV file for download"
+                            )
                         );
                     }
                 }
@@ -751,7 +812,9 @@ async function createCSVBackup(req, res) {
             console.error("Stream error:", err);
             cleanupFile(filePath);
             if (!res.headersSent) {
-                res.status(500).json(new ApiErrorResponce(500, {}, "File stream error"));
+                res.status(500).json(
+                    new ApiErrorResponce(500, {}, "File stream error")
+                );
             }
         });
     } catch (error) {
@@ -759,7 +822,13 @@ async function createCSVBackup(req, res) {
         cleanupFile(filePath);
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -778,7 +847,10 @@ async function generateQRCode(req, res) {
         doc.on("end", () => {
             const pdfData = Buffer.concat(buffers);
             res.setHeader("Content-Type", "application/pdf");
-            res.setHeader("Content-Disposition", `inline; filename="qrcodes_${Date.now()}.pdf"`);
+            res.setHeader(
+                "Content-Disposition",
+                `inline; filename="qrcodes_${Date.now()}.pdf"`
+            );
             res.send(pdfData);
         });
 
@@ -788,7 +860,9 @@ async function generateQRCode(req, res) {
             const qrText = `Asset ID: ${asset.asset_id}\nAsset Type: ${
                 asset.type
             }\nModel No: ${asset.model_no}\nSerial No: ${asset.serial}${
-                asset.exp_date ? `\nExp Date: ${formatDate(new Date(asset.exp_date))}` : ""
+                asset.exp_date
+                    ? `\nExp Date: ${formatDate(new Date(asset.exp_date))}`
+                    : ""
             }`;
 
             // Generate QR code as data URL
@@ -840,11 +914,19 @@ async function getAllAssets(req, res) {
     `;
     try {
         const [assets] = await pool.query(query);
-        res.status(200).json(new ApiResponse(200, assets, "Active assets retrieved successfully"));
+        res.status(200).json(
+            new ApiResponse(200, assets, "Active assets retrieved successfully")
+        );
     } catch (error) {
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -855,18 +937,32 @@ async function getAssetTypes(req, res) {
     try {
         let [rows] = await pool.query(query);
         if (rows.length === 0) {
-            return res.status(299).json(new ApiResponse(200, [], "No asset types found"));
+            return res
+                .status(299)
+                .json(new ApiResponse(200, [], "No asset types found"));
         }
         const types = rows.map((row) => row.type);
-        [rows] = await pool.query(`SELECT DISTINCT model_no FROM ${assetTable}`);
+        [rows] = await pool.query(
+            `SELECT DISTINCT model_no FROM ${assetTable}`
+        );
         const models = rows.map((row) => row.model_no);
         res.status(200).json(
-            new ApiResponse(200, { types, models }, "Asset types retrieved successfully")
+            new ApiResponse(
+                200,
+                { types, models },
+                "Asset types retrieved successfully"
+            )
         );
     } catch (error) {
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -882,7 +978,9 @@ async function uploadAssetsCSV(req, res) {
 
     try {
         if (!req.file) {
-            return res.status(400).json(new ApiErrorResponce(400, {}, "No CSV file uploaded"));
+            return res
+                .status(400)
+                .json(new ApiErrorResponce(400, {}, "No CSV file uploaded"));
         }
 
         // Parse CSV
@@ -890,7 +988,9 @@ async function uploadAssetsCSV(req, res) {
 
         if (csvDataRaw.length < 2) {
             cleanupFile(req.file.path);
-            return res.status(400).json(new ApiErrorResponce(400, {}, "CSV file is empty"));
+            return res
+                .status(400)
+                .json(new ApiErrorResponce(400, {}, "CSV file is empty"));
         }
 
         // Normalize headers
@@ -901,47 +1001,84 @@ async function uploadAssetsCSV(req, res) {
 
                 if (["asset_id", "assetid"].includes(lowerKey)) {
                     normalized.asset_id = row[key];
-                } else if (["serial", "serial_no", "serialnumber"].includes(lowerKey)) {
+                } else if (
+                    ["serial", "serial_no", "serialnumber"].includes(lowerKey)
+                ) {
                     normalized.serial = row[key];
                 } else if (["category", "Category"].includes(lowerKey)) {
                     normalized.type = row[key];
                 } else if (["type", "Type"].includes(lowerKey)) {
                     normalized.asset_type = row[key];
-                } else if (["model_no", "model", "modelnumber"].includes(lowerKey)) {
+                } else if (
+                    ["model_no", "model", "modelnumber"].includes(lowerKey)
+                ) {
                     normalized.model_no = row[key];
                 } else if (["status", "Status"].includes(lowerKey)) {
                     normalized.status = row[key];
                 } else if (["location", "Location"].includes(lowerKey)) {
                     normalized.location = row[key];
-                } else if (["exp_date", "expiry_date", "expiration"].includes(lowerKey)) {
+                } else if (
+                    ["exp_date", "expiry_date", "expiration"].includes(lowerKey)
+                ) {
                     normalized.exp_date = row[key];
-                } else if (["pisDate", "Pis_date", "Pisdate"].includes(lowerKey)) {
+                } else if (
+                    ["pisDate", "Pis_date", "Pisdate", "pis_date"].includes(
+                        lowerKey
+                    )
+                ) {
                     normalized.pisDate = row[key];
                 } else if (["remarks", "Remarks"].includes(lowerKey)) {
                     normalized.remarks = row[key];
-                } else if (["glAccount", "gl_account", "Glaccount"].includes(lowerKey)) {
+                } else if (
+                    ["glAccount", "gl_account", "Glaccount"].includes(lowerKey)
+                ) {
                     normalized.glAccount = row[key];
                 } else if (
-                    ["assetCode", "asset_code", "Assetcode", "us_asset_code"].includes(lowerKey)
+                    [
+                        "assetCode",
+                        "asset_code",
+                        "Assetcode",
+                        "us_asset_code",
+                    ].includes(lowerKey)
                 ) {
                     normalized.assetCode = row[key];
-                } else if (["supplierName", "supplier_name", "Suppliername"].includes(lowerKey)) {
+                } else if (
+                    ["supplierName", "supplier_name", "Suppliername"].includes(
+                        lowerKey
+                    )
+                ) {
                     normalized.supplierName = row[key];
                 } else if (
-                    ["assetCriticality", "asset_criticality", "Assetcriticality"].includes(lowerKey)
+                    [
+                        "assetCriticality",
+                        "asset_criticality",
+                        "Assetcriticality",
+                    ].includes(lowerKey)
                 ) {
                     normalized.assetCriticality = row[key];
-                } else if (["disposal_date", "disposalDate", "Disposaldate"].includes(lowerKey)) {
+                } else if (
+                    ["disposal_date", "disposalDate", "Disposaldate"].includes(
+                        lowerKey
+                    )
+                ) {
                     normalized.disposal_date = row[key];
                 } else if (
-                    ["disposal_method", "disposalMethod", "Disposalmethod"].includes(lowerKey)
+                    [
+                        "disposal_method",
+                        "disposalMethod",
+                        "Disposalmethod",
+                    ].includes(lowerKey)
                 ) {
                     normalized.disposal_method = row[key];
                 } else if (["sale_to", "saleTo", "Saleto"].includes(lowerKey)) {
                     normalized.sale_to = row[key];
-                } else if (["donated_to", "donatedTo", "Donatedto"].includes(lowerKey)) {
+                } else if (
+                    ["donated_to", "donatedTo", "Donatedto"].includes(lowerKey)
+                ) {
                     normalized.donated_to = row[key];
-                } else if (["trash_to", "trashTo", "Trashto"].includes(lowerKey)) {
+                } else if (
+                    ["trash_to", "trashTo", "Trashto"].includes(lowerKey)
+                ) {
                     normalized.trash_to = row[key];
                 }
             }
@@ -951,7 +1088,9 @@ async function uploadAssetsCSV(req, res) {
         // Validate required headers
         const headers = Object.keys(csvData[0]);
         const requiredHeaders = ["asset_id", "type", "model_no", "asset_type"]; // serial removed
-        const missingHeaders = requiredHeaders.filter((header) => !headers.includes(header));
+        const missingHeaders = requiredHeaders.filter(
+            (header) => !headers.includes(header)
+        );
 
         if (missingHeaders.length > 0) {
             cleanupFile(req.file.path);
@@ -987,8 +1126,12 @@ async function uploadAssetsCSV(req, res) {
                 const modelNo = row.model_no?.trim();
                 const status = row.status?.toLowerCase().trim() || "active";
                 const location = row.location?.trim() || null;
-                const expDate = row.exp_date ? chageDateFormat(row.exp_date) : null;
-                const pis_Date = row.pisDate ? chageDateFormat(row.pisDate) : null;
+                const expDate = row.exp_date
+                    ? chageDateFormat(row.exp_date)
+                    : null;
+                const pis_Date = row.pisDate
+                    ? chageDateFormat(row.pisDate)
+                    : null;
                 const remarks = row.remarks?.trim() || null;
                 const glAccount = row.glAccount?.trim() || null;
                 const assetCode = row.assetCode?.trim() || null;
@@ -1001,7 +1144,9 @@ async function uploadAssetsCSV(req, res) {
                         assetType = null;
                     }
                 }
-                const disposalDate = row.disposal_date ? chageDateFormat(row.disposal_date) : null;
+                const disposalDate = row.disposal_date
+                    ? chageDateFormat(row.disposal_date)
+                    : null;
                 const disposalMethod = row.disposal_method?.trim() || null;
                 const saleTo = row.sale_to?.trim() || null;
                 const donatedTo = row.donated_to?.trim() || null;
@@ -1069,7 +1214,9 @@ async function uploadAssetsCSV(req, res) {
                 }
 
                 if (childAssets.length > 0) {
-                    const invalidChildren = childAssets.filter((c) => !validateAssetId(c));
+                    const invalidChildren = childAssets.filter(
+                        (c) => !validateAssetId(c)
+                    );
                     if (invalidChildren.length > 0) {
                         validationFailureCount++;
                         failed.push({
@@ -1155,7 +1302,10 @@ async function uploadAssetsCSV(req, res) {
                 try {
                     await connection.beginTransaction();
 
-                    const child_asset = asset.childAssets && asset.childAssets.length > 0 ? 1 : 0;
+                    const child_asset =
+                        asset.childAssets && asset.childAssets.length > 0
+                            ? 1
+                            : 0;
 
                     const [insertResult] = await connection.query(insertQuery, [
                         asset.assetId,
@@ -1191,9 +1341,13 @@ async function uploadAssetsCSV(req, res) {
                         const foundIds = childRows.map((r) => r.id);
                         const foundAssetIds = childRows.map((r) => r.asset_id);
 
-                        const missing = asset.childAssets.filter((c) => !foundAssetIds.includes(c));
+                        const missing = asset.childAssets.filter(
+                            (c) => !foundAssetIds.includes(c)
+                        );
                         if (missing.length > 0) {
-                            throw new Error(`Child assets not found in DB: ${missing.join(", ")}`);
+                            throw new Error(
+                                `Child assets not found in DB: ${missing.join(", ")}`
+                            );
                         }
 
                         // Validation 1: child asset cannot already be a child of another asset
@@ -1220,7 +1374,9 @@ async function uploadAssetsCSV(req, res) {
 
                         // Validation 3: circular dependency check (cannot be its own child, though handled implicitly by 'missing' or 'alreadyAssigned' and we just check against self)
                         if (foundIds.includes(newAssetId)) {
-                            throw new Error("An asset cannot be added as its own child asset");
+                            throw new Error(
+                                "An asset cannot be added as its own child asset"
+                            );
                         }
 
                         // Insert mappings
@@ -1273,7 +1429,11 @@ async function uploadAssetsCSV(req, res) {
     } catch (error) {
         if (req.file) cleanupFile(req.file.path);
         res.status(500).json(
-            new ApiErrorResponce(500, {}, error.message || "Internal server error")
+            new ApiErrorResponce(
+                500,
+                {},
+                error.message || "Internal server error"
+            )
         );
     }
 }
@@ -1343,7 +1503,13 @@ async function getSampleCSV(req, res) {
                 if (err) {
                     return res
                         .status(500)
-                        .json(new ApiErrorResponce(500, {}, "Error sending sample CSV file"));
+                        .json(
+                            new ApiErrorResponce(
+                                500,
+                                {},
+                                "Error sending sample CSV file"
+                            )
+                        );
                 }
             });
         }
@@ -1361,7 +1527,13 @@ async function getSampleCSV(req, res) {
                 if (err) {
                     return res
                         .status(500)
-                        .json(new ApiErrorResponce(500, {}, "Error sending sample CSV file"));
+                        .json(
+                            new ApiErrorResponce(
+                                500,
+                                {},
+                                "Error sending sample CSV file"
+                            )
+                        );
                 }
             });
         });
@@ -1373,12 +1545,24 @@ async function getSampleCSV(req, res) {
             }
             return res
                 .status(500)
-                .json(new ApiErrorResponce(500, {}, "Error writing sample CSV file"));
+                .json(
+                    new ApiErrorResponce(
+                        500,
+                        {},
+                        "Error writing sample CSV file"
+                    )
+                );
         });
     } catch (error) {
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -1417,14 +1601,23 @@ async function getExpiringAssets(req, res) {
         //   new ApiResponse(200, { expiredToday, expiredTomorrow }, "Expiring assets retrieved")
         // );
     } catch (error) {
-        return res.status(500).json(new ApiErrorResponce(500, {}, error.message));
+        return res
+            .status(500)
+            .json(new ApiErrorResponce(500, {}, error.message));
     }
 }
 
 async function disposeAsset(req, res) {
     const { tenantId } = req.user;
 
-    const { assetId, disposalDate, disposalMethod, saleTo, donatedTo, trashTo } = req.body;
+    const {
+        assetId,
+        disposalDate,
+        disposalMethod,
+        saleTo,
+        donatedTo,
+        trashTo,
+    } = req.body;
 
     try {
         if (!assetId || !disposalDate || !disposalMethod) {
@@ -1462,7 +1655,9 @@ async function disposeAsset(req, res) {
         }
 
         if (tagged[0].count > 0) {
-            return res.status(400).json(new ApiErrorResponce(400, {}, "Asset is tagged"));
+            return res
+                .status(400)
+                .json(new ApiErrorResponce(400, {}, "Asset is tagged"));
         }
 
         await pool.query(
@@ -1493,7 +1688,9 @@ async function disposeAsset(req, res) {
             )
         );
     } catch (error) {
-        return res.status(500).json(new ApiErrorResponce(500, {}, error.message));
+        return res
+            .status(500)
+            .json(new ApiErrorResponce(500, {}, error.message));
     }
 }
 
@@ -1510,7 +1707,9 @@ async function getDisposedAssets(req, res) {
     const offset = (page - 1) * size;
 
     if (size < 1 || page < 1) {
-        return res.status(400).json(new ApiErrorResponce(400, {}, "Invalid page or size"));
+        return res
+            .status(400)
+            .json(new ApiErrorResponce(400, {}, "Invalid page or size"));
     }
 
     let whereClauses = ["a.disposalDate IS NOT NULL"];
@@ -1532,7 +1731,9 @@ async function getDisposedAssets(req, res) {
         countParams.push(like, like, like, like);
     }
 
-    const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const whereSql = whereClauses.length
+        ? `WHERE ${whereClauses.join(" AND ")}`
+        : "";
 
     // Count query (no joins for performance)
     const countQuery = `
@@ -1564,7 +1765,9 @@ async function getDisposedAssets(req, res) {
         const totalPages = Math.ceil(totalItems / size);
 
         if (page > totalPages && totalPages !== 0) {
-            return res.status(404).json(new ApiErrorResponce(404, {}, "Page not found"));
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "Page not found"));
         }
 
         if (totalItems === 0) {
@@ -1584,7 +1787,11 @@ async function getDisposedAssets(req, res) {
         }
 
         // Execute data query
-        const [assets] = await pool.query(dataQuery, [...dataParams, size, offset]);
+        const [assets] = await pool.query(dataQuery, [
+            ...dataParams,
+            size,
+            offset,
+        ]);
 
         return res.status(200).json(
             new ApiResponse(
@@ -1602,7 +1809,13 @@ async function getDisposedAssets(req, res) {
     } catch (error) {
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -1644,7 +1857,9 @@ async function createDisposedCSVBackup(req, res) {
     `;
 
     const uploadsDir =
-        env == "production" ? path.join(__dirname, "uploads") : path.join(__dirname, "../uploads");
+        env == "production"
+            ? path.join(__dirname, "uploads")
+            : path.join(__dirname, "../uploads");
     const filename = `disposed_assets_${tenantId}_${Math.floor(Date.now() / 1000)}.csv`;
     const filePath = path.join(uploadsDir, filename);
 
@@ -1662,7 +1877,9 @@ async function createDisposedCSVBackup(req, res) {
         const [rows] = await pool.query(query);
 
         if (rows.length === 0) {
-            return res.status(404).json(new ApiErrorResponce(404, {}, "No assets found"));
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "No assets found"));
         }
 
         const ws = fs.createWriteStream(filePath);
@@ -1693,7 +1910,11 @@ async function createDisposedCSVBackup(req, res) {
                     console.error("Error sending file:", err);
                     if (!res.headersSent) {
                         res.status(500).json(
-                            new ApiErrorResponce(500, {}, "Error sending CSV file for download")
+                            new ApiErrorResponce(
+                                500,
+                                {},
+                                "Error sending CSV file for download"
+                            )
                         );
                     }
                 }
@@ -1704,7 +1925,9 @@ async function createDisposedCSVBackup(req, res) {
             console.error("Stream error:", err);
             cleanupFile(filePath);
             if (!res.headersSent) {
-                res.status(500).json(new ApiErrorResponce(500, {}, "File stream error"));
+                res.status(500).json(
+                    new ApiErrorResponce(500, {}, "File stream error")
+                );
             }
         });
     } catch (error) {
@@ -1712,7 +1935,13 @@ async function createDisposedCSVBackup(req, res) {
         cleanupFile(filePath);
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
@@ -1748,7 +1977,9 @@ async function assetAllocationHistory(req, res) {
         const totalItems = countRows[0].totalItems;
 
         if (totalItems === 0) {
-            return res.status(404).json(new ApiErrorResponce(404, {}, "No records found"));
+            return res
+                .status(404)
+                .json(new ApiErrorResponce(404, {}, "No records found"));
         }
 
         const dataQuery = `
@@ -1784,7 +2015,13 @@ async function assetAllocationHistory(req, res) {
         console.error("Error retrieving asset allocation history:", error);
         return res
             .status(500)
-            .json(new ApiErrorResponce(500, {}, error.message || "Internal server error"));
+            .json(
+                new ApiErrorResponce(
+                    500,
+                    {},
+                    error.message || "Internal server error"
+                )
+            );
     }
 }
 
